@@ -1,0 +1,106 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_COURSES 50
+#define MAX_LEN 100
+
+typedef struct {
+    char courseName[MAX_LEN];
+    char instructor[MAX_LEN];
+    int roomNumber;
+    int dayOfWeek;    // 0=Mon, 1=Tue... 6=Sun
+    int startHour;    // 24-hr format
+    int endHour;
+} Course;
+
+Course schedule[MAX_COURSES];
+int courseCount = 0;
+
+// Function to check for time conflicts
+int isConflict(Course newCourse) {
+    for (int i = 0; i < courseCount; i++) {
+        Course existing = schedule[i];
+        if (existing.roomNumber == newCourse.roomNumber &&
+            existing.dayOfWeek == newCourse.dayOfWeek &&
+            !(newCourse.endHour <= existing.startHour || newCourse.startHour >= existing.endHour)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// Add course
+void addCourse() {
+    if (courseCount >= MAX_COURSES) {
+        printf("Schedule full!\n");
+        return;
+    }
+
+    Course newCourse;
+    printf("\nEnter course name: ");
+    scanf(" %[^\n]", newCourse.courseName);
+    printf("Enter instructor name: ");
+    scanf(" %[^\n]", newCourse.instructor);
+    printf("Enter room number: ");
+    scanf("%d", &newCourse.roomNumber);
+    printf("Enter day of week (0=Mon, 6=Sun): ");
+    scanf("%d", &newCourse.dayOfWeek);
+    printf("Enter start hour (0-23): ");
+    scanf("%d", &newCourse.startHour);
+    printf("Enter end hour (0-23): ");
+    scanf("%d", &newCourse.endHour);
+
+    if (newCourse.endHour <= newCourse.startHour) {
+        printf("Invalid time range!\n");
+        return;
+    }
+
+    if (isConflict(newCourse)) {
+        printf("Scheduling conflict! Try another time or room.\n");
+        return;
+    }
+
+    schedule[courseCount++] = newCourse;
+    printf("Course added successfully!\n");
+}
+
+// Display schedule
+void viewSchedule() {
+    if (courseCount == 0) {
+        printf("No courses scheduled.\n");
+        return;
+    }
+
+    printf("\nScheduled Courses:\n");
+    printf("------------------------------------------------------------\n");
+    for (int i = 0; i < courseCount; i++) {
+        Course c = schedule[i];
+        printf("Course: %s | Instructor: %s | Room: %d | Day: %d | %02d:00 - %02d:00\n",
+               c.courseName, c.instructor, c.roomNumber, c.dayOfWeek,
+               c.startHour, c.endHour);
+    }
+    printf("------------------------------------------------------------\n");
+}
+
+int main() {
+    int choice;
+
+    do {
+        printf("\n===== Smart Campus Scheduler =====\n");
+        printf("1. Add Course\n");
+        printf("2. View Schedule\n");
+        printf("0. Exit\n");
+        printf("Choose an option: ");
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case 1: addCourse(); break;
+            case 2: viewSchedule(); break;
+            case 0: printf("Exiting...\n"); break;
+            default: printf("Invalid choice.\n");
+        }
+
+    } while (choice != 0);
+
+    return 0;
+}
